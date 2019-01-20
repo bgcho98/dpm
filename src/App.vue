@@ -1,14 +1,27 @@
 <template>
   <div id="app">
     <div class="container-fluid" height="100%">
-      <hr>
-      <b-form-group label="수행월">
-        <b-form-checkbox-group v-model="searchMontlyTag" name="flavour1" :options="tagMonthly"></b-form-checkbox-group>
+      <b-form-group label="수행월" :size="'sm'">
+        <b-form-checkbox-group
+          :size="'sm'"
+          v-model="searchMontlyTag"
+          name="flavour1"
+          :options="tagMonthly"
+        ></b-form-checkbox-group>
       </b-form-group>
-      <b-form-group label="담당자">
-        <b-form-checkbox-group v-model="searchMembers" name="flavour1" :options="members"></b-form-checkbox-group>
+      <b-form-group label="담당자" :size="'sm'">
+        <b-form-checkbox-group
+          :size="'sm'"
+          v-model="searchMembers"
+          name="flavour1"
+          :options="members"
+        ></b-form-checkbox-group>
       </b-form-group>
-      <b-button :size="'sm'" :variant="'primary'" @click="search">검색</b-button>
+
+      <b-button :size="'sm'" :variant="'primary'" @click="search">
+        <font-awesome-icon icon="search"/>검색
+      </b-button>
+
       <hr>
       <div>
         <ul id="example-1">
@@ -16,65 +29,83 @@
         </ul>
       </div>
       <hr>
-      <grid :rowData="rows" :columnData="columns" :options="options"/>
+      <b-table striped hover small :items="rows" :fields="columns">
+        <template slot="parentSubject" slot-scope="data">
+          <a :href="getPostLink(data.item.parent.id)" target="_blank">{{ data.value }}</a>
+        </template>
+        <template slot="subject" slot-scope="data">
+          <a
+            :href="getPostLink(data.item.id)"
+            target="_blank"
+          >{{ data.item.number }} {{ data.value }}</a>
+        </template>
+        <template slot="workflowClass" slot-scope="data">
+          <b-badge :variant="getWorkflowColor(data.value)">{{ data.value }}</b-badge>
+        </template>
+      </b-table>
     </div>
   </div>
 </template>
 
 <script>
 import "tui-grid/dist/tui-grid.css";
-import { Grid } from "@toast-ui/vue-grid";
 import DoorayService from "./components/service/dooray-service";
 import { Observable } from "rxjs";
 
 export default {
-  components: {
-    grid: Grid
-  },
   created() {
     this.initTagMap();
     this.initMileStones();
   },
   data() {
     return {
-      options: {
-        minBodyHeight: 500
-      },
       rows: [],
       columns: [
         {
-          title: "담당자",
-          name: "assignUserName",
-          width: 90,
+          label: "상태",
+          key: "workflowClass",
+          width: "100px",
           sortable: true
         },
         {
-          title: "마일스톤",
-          name: "mileStoneName",
-          width: 140,
+          label: "담당자",
+          key: "assignUserName",
+          width: "80px",
           sortable: true
         },
         {
-          title: "상위 업무",
-          name: "parentSubject",
+          label: "마일스톤",
+          key: "mileStoneName",
+          width: "100px",
+          sortable: true
+        },
+        {
+          label: "상위 업무",
+          key: "parentSubject",
           sortable: true,
-          width: 200
+          width: "200px"
         },
         {
-          title: "제목",
-          name: "subject",
+          label: "제목",
+          key: "subject",
           sortable: true
         },
         {
-          title: "상태",
-          name: "workflowClass",
-          width: 100,
+          label: "모듈",
+          key: "module",
+          width: "140px",
           sortable: true
         },
         {
-          title: "MD",
-          name: "md",
-          width: 30,
+          label: "종류",
+          key: "workType",
+          width: "100px",
+          sortable: true
+        },
+        {
+          label: "MD",
+          key: "md",
+          width: "30px",
           sortable: true
         }
       ],
@@ -220,6 +251,8 @@ export default {
           if (isNaN(issue.md)) {
             issue.md = 0;
           }
+        } else if (tag.name.includes("작업:")) {
+          issue.workType = tag.name.substring(4);
         }
 
         if (tag.module != null && tag.md != null) {
@@ -261,7 +294,27 @@ export default {
         .subscribe(mileStone => {
           this.mileStoneMap[mileStone.id] = mileStone;
         });
+    },
+    getPostLink(postId) {
+      return `https://nhnent.dooray.com/project/posts/${postId}`;
+    },
+    getWorkflowColor(workflowClass) {
+      switch (workflowClass) {
+        case "working":
+          return "primary";
+        case "registered":
+          return "success";
+        case "closed":
+          return "dark";
+      }
     }
   }
 };
 </script>
+
+<style>
+html * {
+  font-size: 12px !important;
+  font-family: Arial !important;
+}
+</style>

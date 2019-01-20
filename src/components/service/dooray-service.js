@@ -33,7 +33,7 @@ export const DoorayService = {
             order: "-createdAt",
             hasParent: "true",
             page: page,
-            size: (page + 1) * 30,
+            size: 30,
             tagIds: tagIds
           },
           tagIds
