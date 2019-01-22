@@ -3,6 +3,7 @@ module.exports = {
   devServer: {
     useLocalIp: true,
     disableHostCheck: true,
+    port: 9999,
     proxy: {
       '^/api/dooray': {
         target: 'https://nhnent.dooray.com',

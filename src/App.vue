@@ -1,7 +1,13 @@
 <template>
   <div id="app">
-    <div class="container-fluid" height="100%">
-      <b-form-group label="수행월" :size="'sm'">
+    <div
+      class="container-fluid"
+      height="100%"
+    >
+      <b-form-group
+        label="수행월"
+        :size="'sm'"
+      >
         <b-form-checkbox-group
           :size="'sm'"
           v-model="searchMontlyTag"
@@ -9,7 +15,10 @@
           :options="tagMonthly"
         ></b-form-checkbox-group>
       </b-form-group>
-      <b-form-group label="담당자" :size="'sm'">
+      <b-form-group
+        label="담당자"
+        :size="'sm'"
+      >
         <b-form-checkbox-group
           :size="'sm'"
           v-model="searchMembers"
@@ -18,28 +27,53 @@
         ></b-form-checkbox-group>
       </b-form-group>
 
-      <b-button :size="'sm'" :variant="'primary'" @click="search">
-        <font-awesome-icon icon="search"/>검색
+      <b-button
+        :size="'sm'"
+        :variant="'primary'"
+        @click="search"
+      >
+        <font-awesome-icon icon="search" />검색
       </b-button>
 
       <hr>
       <div>
         <ul id="example-1">
-          <li v-for="md in manMonthSum" :key="md.name">{{ md.name }} : {{ (md.sum).toFixed(1) }} MD</li>
+          <li
+            v-for="md in manMonthSum"
+            :key="md.name"
+          >{{ md.name }} : {{ (md.sum).toFixed(1) }} MD , 완료 {{ md.closedSum.toFixed(1) }}, 미완료 {{ (md.sum - md.closedSum).toFixed(1) }} </li>
         </ul>
       </div>
       <hr>
-      <b-table striped hover small :items="rows" :fields="columns">
-        <template slot="parentSubject" slot-scope="data">
-          <a :href="getPostLink(data.item.parent.id)" target="_blank">{{ data.value }}</a>
+      <b-table
+        striped
+        hover
+        small
+        :items="rows"
+        :fields="columns"
+      >
+        <template
+          slot="parentSubject"
+          slot-scope="data"
+        >
+          <a
+            :href="getPostLink(data.item.parent.id)"
+            target="_blank"
+          >{{ data.value }}</a>
         </template>
-        <template slot="subject" slot-scope="data">
+        <template
+          slot="subject"
+          slot-scope="data"
+        >
           <a
             :href="getPostLink(data.item.id)"
             target="_blank"
           >{{ data.item.number }} {{ data.value }}</a>
         </template>
-        <template slot="workflowClass" slot-scope="data">
+        <template
+          slot="workflowClass"
+          slot-scope="data"
+        >
           <b-badge :variant="getWorkflowColor(data.value)">{{ data.value }}</b-badge>
         </template>
       </b-table>
@@ -167,12 +201,15 @@ export default {
         .mergeMap(group => {
           return group.reduce(
             (acc, cur) => {
+              let closedMd = cur.workflowClass == "closed" ? cur.md : 0;
+
               return {
                 name: cur.assignUserName,
-                sum: acc.sum + cur.md
+                sum: acc.sum + cur.md,
+                closedSum: acc.closedSum + closedMd
               };
             },
-            { name: "", sum: 0 }
+            { name: "", sum: 0, closedSum: 0 }
           );
         })
         .subscribe(group => this.manMonthSum.push(group));
