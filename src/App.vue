@@ -1,82 +1,62 @@
 <template>
   <div id="app">
-    <div
-      class="container-fluid"
-      height="100%"
-    >
-      <b-form-group
-        label="수행월"
-        :size="'sm'"
-      >
-        <b-form-checkbox-group
-          :size="'sm'"
-          v-model="searchMontlyTag"
-          name="flavour1"
-          :options="tagMonthly"
-        ></b-form-checkbox-group>
-      </b-form-group>
-      <b-form-group
-        label="담당자"
-        :size="'sm'"
-      >
-        <b-form-checkbox-group
-          :size="'sm'"
-          v-model="searchMembers"
-          name="flavour1"
-          :options="members"
-        ></b-form-checkbox-group>
-      </b-form-group>
-
-      <b-button
-        :size="'sm'"
-        :variant="'primary'"
-        @click="search"
-      >
-        <font-awesome-icon icon="search" />검색
-      </b-button>
-
-      <hr>
+    <div class="container-fluid" height="100%">
       <div>
-        <ul id="example-1">
-          <li
-            v-for="md in manMonthSum"
-            :key="md.name"
-          >{{ md.name }} : {{ (md.sum).toFixed(1) }} MD , 완료 {{ md.closedSum.toFixed(1) }}, 미완료 {{ (md.sum - md.closedSum).toFixed(1) }} </li>
-        </ul>
+        <b-card header="검색">
+          <b-form-group label="수행월" :size="'sm'">
+            <b-form-checkbox-group
+              :size="'sm'"
+              v-model="searchMontlyTag"
+              name="flavour1"
+              :options="tagMonthly"
+            ></b-form-checkbox-group>
+          </b-form-group>
+          <b-form-group label="담당자" :size="'sm'">
+            <b-form-checkbox-group
+              :size="'sm'"
+              v-model="searchMembers"
+              name="flavour1"
+              :options="members"
+            ></b-form-checkbox-group>
+          </b-form-group>
+
+          <b-button :size="'sm'" :variant="'success'" @click="search">
+            <font-awesome-icon icon="search"/>검색
+          </b-button>
+        </b-card>
+      </div>
+      <div>
+        <b-card header="종합">
+          <ul id="example-1">
+            <li v-for="man in manMonthSum" :key="man.name">
+              <a :href="`#${man.name}`">{{ man.name }}</a>
+              : {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}
+            </li>
+          </ul>
+        </b-card>
       </div>
       <hr>
-      <b-table
-        striped
-        hover
-        small
-        :items="rows"
-        :fields="columns"
-      >
-        <template
-          slot="parentSubject"
-          slot-scope="data"
-        >
-          <a
-            :href="getPostLink(data.item.parent.id)"
-            target="_blank"
-          >{{ data.value }}</a>
-        </template>
-        <template
-          slot="subject"
-          slot-scope="data"
-        >
-          <a
-            :href="getPostLink(data.item.id)"
-            target="_blank"
-          >{{ data.item.number }} {{ data.value }}</a>
-        </template>
-        <template
-          slot="workflowClass"
-          slot-scope="data"
-        >
-          <b-badge :variant="getWorkflowColor(data.value)">{{ data.value }}</b-badge>
-        </template>
-      </b-table>
+      <div v-for="man in manMonthSum" :key="man.name">
+        <h3>
+          <a :name="man.name">{{ man.name }}</a>
+          : {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}
+        </h3>
+        <b-table striped hover small :items="man.posts" :fields="columns">
+          <template slot="parentSubject" slot-scope="data">
+            <a :href="getPostLink(data.item.parent.id)" target="_blank">{{ data.value }}</a>
+          </template>
+          <template slot="subject" slot-scope="data">
+            <a
+              :href="getPostLink(data.item.id)"
+              target="_blank"
+            >{{ data.item.number }} {{ data.value }}</a>
+          </template>
+          <template slot="workflowClass" slot-scope="data">
+            <b-badge :variant="getWorkflowColor(data.value)">{{ data.value }}</b-badge>
+          </template>
+        </b-table>
+        <hr>
+      </div>
     </div>
   </div>
 </template>
@@ -99,12 +79,6 @@ export default {
           label: "상태",
           key: "workflowClass",
           width: "100px",
-          sortable: true
-        },
-        {
-          label: "담당자",
-          key: "assignUserName",
-          width: "80px",
           sortable: true
         },
         {
@@ -139,6 +113,12 @@ export default {
         {
           label: "MD",
           key: "md",
+          width: "30px",
+          sortable: true
+        },
+        {
+          label: "수행월",
+          key: "month",
           width: "30px",
           sortable: true
         }
@@ -206,10 +186,11 @@ export default {
               return {
                 name: cur.assignUserName,
                 sum: acc.sum + cur.md,
-                closedSum: acc.closedSum + closedMd
+                closedSum: acc.closedSum + closedMd,
+                posts: [...acc.posts, cur]
               };
             },
-            { name: "", sum: 0, closedSum: 0 }
+            { name: "", sum: 0, closedSum: 0, posts: [] }
           );
         })
         .subscribe(group => this.manMonthSum.push(group));
@@ -290,6 +271,8 @@ export default {
           }
         } else if (tag.name.includes("작업:")) {
           issue.workType = tag.name.substring(4);
+        } else if (tag.name.includes("수행월:")) {
+          issue.month = tag.name.substring(5);
         }
 
         if (tag.module != null && tag.md != null) {
@@ -351,7 +334,6 @@ export default {
 
 <style>
 html * {
-  font-size: 12px !important;
-  font-family: Arial !important;
+  font-size: 98%;
 }
 </style>
