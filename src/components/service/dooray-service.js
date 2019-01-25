@@ -1,6 +1,8 @@
 import axios from "axios";
 import ObservableUtils from "../utils/obserable-utils";
-import { Observable } from "rxjs";
+import {
+  Observable
+} from "rxjs";
 
 const DoorayKey = {
   projectId: "1963480696738741170"
@@ -28,8 +30,7 @@ export const DoorayService = {
   getPosts(page, tagIds) {
     return ObservableUtils.fromPromise(
       axios.get(`/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/posts`, {
-        params: Object.assign(
-          {
+        params: Object.assign({
             order: "-createdAt",
             hasParent: "true",
             page: page,
@@ -53,14 +54,34 @@ export const DoorayService = {
   getMileStones() {
     return ObservableUtils.fromPromise(
       axios.get(
-        `/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/milestones`,
-        {
+        `/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/milestones`, {
           params: {
             size: 10000
           }
         }
       )
     ).map(response => response.data.result.contents);
+  },
+  modifyTags(postIdList, removeTagIdList, addTagIdList) {
+    return ObservableUtils.fromPromise(
+      axios.post(
+        `/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/posts/modify-tags`, {
+          postIdList: postIdList,
+          addTagIdList: addTagIdList,
+          removeTagIdList: removeTagIdList
+        }
+      )
+    ).map(response => response.header);
+  },
+  modifyMileStone(postIdList, milestoneId) {
+    return ObservableUtils.fromPromise(
+      axios.post(
+        `/api/dooray/v2/wapi/projects/!1963480696738741170/posts/set-milestone`, {
+          postIdList: postIdList,
+          milestoneId: milestoneId
+        }
+      )
+    ).map(response => response.header);
   }
 };
 

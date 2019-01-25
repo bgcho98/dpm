@@ -16,6 +16,7 @@ const ObservableUtils = {
       );
   },
   catchException: function(e) {
+    alert(e);
     console.error(e);
     throw e;
   }
