@@ -1,15 +1,9 @@
 <template>
   <div id="app">
-    <div
-      class="container-fluid"
-      height="100%"
-    >
+    <div class="container-fluid" height="100%">
       <div>
         <b-card>
-          <b-form-group
-            label="수행월"
-            :size="'sm'"
-          >
+          <b-form-group label="수행월" :size="'sm'">
             <b-form-checkbox-group
               :size="'sm'"
               v-model="searchMontlyTag"
@@ -17,10 +11,7 @@
               :options="tagMonthly"
             ></b-form-checkbox-group>
           </b-form-group>
-          <b-form-group
-            label="담당자"
-            :size="'sm'"
-          >
+          <b-form-group label="담당자" :size="'sm'">
             <b-form-checkbox-group
               :size="'sm'"
               v-model="searchMembers"
@@ -29,112 +20,91 @@
             ></b-form-checkbox-group>
           </b-form-group>
 
-          <b-button
-            :size="'sm'"
-            :variant="'success'"
-            @click="search"
-          >
-            <font-awesome-icon icon="search" />검색
+          <b-button :size="'sm'" :variant="'success'" @click="search">
+            <font-awesome-icon :icon="['fas', 'search']"/>검색
           </b-button>
         </b-card>
       </div>
       <div>
         <b-card header="종합">
           <ul id="example-1">
-            <li
-              v-for="man in manMonthSum"
-              :key="man.name"
-            >
+            <li v-for="man in manMonthSum" :key="man.name">
               <a :href="`#${man.name}`">{{ man.name }}</a>
               : {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}
-              <br>
-              --- 모듈별 : <span
+              <br>--- 모듈별 :
+              <span
                 v-for="module in man.statics.module"
                 :key="module.name"
-              >{{ module.name }} : {{ module.md.toFixed(1) }} ({{ (module.md*100/man.sum).toFixed(1) }}%), </span>
-              <br>
-              --- 종류별 : <span
+              >{{ module.name }} : {{ module.md.toFixed(1) }} ({{ (module.md*100/man.sum).toFixed(1) }}%),</span>
+              <br>--- 종류별 :
+              <span
                 v-for="workType in man.statics.workType"
                 :key="workType.name"
-              >{{ workType.name }} : {{ workType.md.toFixed(1) }} ({{ (workType.md*100/man.sum).toFixed(1) }}%), </span>
+              >{{ workType.name }} : {{ workType.md.toFixed(1) }} ({{ (workType.md*100/man.sum).toFixed(1) }}%),</span>
             </li>
           </ul>
         </b-card>
       </div>
       <hr>
-      <div
-        v-for="man in manMonthSum"
-        :key="man.name"
-      >
-        <h3>
-          <a :name="man.name">{{ man.name }}</a>
-          : {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}
-        </h3>
-        <b-table
-          striped
-          hover
-          small
-          :items="man.posts"
-          :fields="columns"
+      <div v-for="man in manMonthSum" :key="man.name">
+        <a :name="man.name">
+          <span style="font-size:20px;">{{ man.name }}</span>
+        </a>
+        <span
+          style="font-size:21px;"
+        >&nbsp;: {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}</span>
+
+        <vue-good-table
+          :rows="man.posts"
+          :columns="columns"
+          styleClass="vgt-table condensed striped"
+          :sort-options="{
+            enabled: true,
+            initialSortBy: {field: 'workflowClass', type: 'desc'}
+          }"
         >
-          <template
-            slot="parentSubject"
-            slot-scope="data"
-          >
-            <a
-              :href="getPostLink(data.item.parent.id)"
-              target="_blank"
-            >{{ data.value }}</a>
+          <template slot="table-row" slot-scope="props">
+            <template v-if="props.column.field == 'subject'">
+              <a :href="getPostLink(props.row.id)" target="_blank">{{ props.row.subject }}</a>
+            </template>
+            <template v-else-if="props.column.field == 'parentSubject'">
+              <a
+                :href="getPostLink(props.row.parent.id)"
+                target="_blank"
+              >{{ props.row.parentSubject }}</a>
+            </template>
+            <template v-else-if="props.column.field == 'workflowClass'">
+              <b-badge
+                :variant="getWorkflowColor(props.row.workflowClass)"
+              >{{ props.row.workflowClass }}</b-badge>
+            </template>
+            <template v-else-if="props.column.field == 'month'">
+              <b-form-select
+                v-model="props.row.month"
+                :options="tagMonthly"
+                @change="changeWorkMonth($event, props.row)"
+                size="sm"
+              />
+            </template>
+            <template v-else-if="props.column.field == 'mdTagId'">
+              <b-form-select
+                v-model="props.row.mdTagId"
+                :options="tagMD"
+                @change="changeMD($event, props.row)"
+                size="sm"
+              />
+            </template>
+            <template v-else-if="props.column.field == 'milestoneId'">
+              <b-form-select
+                v-model="props.row.milestoneId"
+                :options="mileStoneArray"
+                @change="changeMileStone($event, props.row)"
+                size="sm"
+              />
+            </template>
+            <template v-else>{{props.formattedRow[props.column.field]}}</template>
           </template>
-          <template
-            slot="subject"
-            slot-scope="data"
-          >
-            <a
-              :href="getPostLink(data.item.id)"
-              target="_blank"
-            >{{ data.item.number }} {{ data.value }}</a>
-          </template>
-          <template
-            slot="workflowClass"
-            slot-scope="data"
-          >
-            <b-badge :variant="getWorkflowColor(data.value)">{{ data.value }}</b-badge>
-          </template>
-          <template
-            slot="month"
-            slot-scope="data"
-          >
-            <b-form-select
-              v-model="data.value"
-              :options="tagMonthly"
-              @change="changeWorkMonth($event, data)"
-              size="sm"
-            />
-          </template>
-          <template
-            slot="md"
-            slot-scope="data"
-          >
-            <b-form-select
-              v-model="data.item.mdTagId"
-              :options="tagMD"
-              @change="changeMD($event, data)"
-              size="sm"
-            />
-          </template>
-          <template
-            slot="milestoneId"
-            slot-scope="data"
-          >
-            <b-form-select
-              v-model="data.value"
-              :options="mileStoneArray"
-              @change="changeMileStone($event, data)"
-              size="sm"
-            />
-          </template>
-        </b-table>
+        </vue-good-table>
         <hr>
       </div>
     </div>
@@ -142,11 +112,14 @@
 </template>
 
 <script>
-import "tui-grid/dist/tui-grid.css";
 import DoorayService from "./components/service/dooray-service";
 import { Observable } from "rxjs";
+import { VueGoodTable } from "vue-good-table";
 
 export default {
+  components: {
+    VueGoodTable
+  },
   created() {
     this.initTagMap();
     this.initMileStones();
@@ -157,49 +130,49 @@ export default {
       columns: [
         {
           label: "상태",
-          key: "workflowClass",
-          width: "100px",
+          field: "workflowClass",
+          width: "80px",
           sortable: true
         },
         {
           label: "마일스톤",
-          key: "milestoneId",
-          width: "100px",
+          field: "milestoneId",
+          width: "120px",
           sortable: true
         },
         {
           label: "상위 업무",
-          key: "parentSubject",
+          field: "parentSubject",
           sortable: true,
           width: "200px"
         },
         {
           label: "제목",
-          key: "subject",
+          field: "subject",
           sortable: true
         },
         {
           label: "모듈",
-          key: "module",
-          width: "140px",
+          field: "module",
+          width: "120px",
           sortable: true
         },
         {
           label: "종류",
-          key: "workType",
-          width: "100px",
+          field: "workType",
+          width: "80px",
           sortable: true
         },
         {
           label: "MD",
-          key: "md",
-          width: "30px",
+          field: "mdTagId",
+          width: "70px",
           sortable: true
         },
         {
           label: "수행월",
-          key: "month",
-          width: "30px",
+          field: "month",
+          width: "100px",
           sortable: true
         }
       ],
@@ -414,15 +387,18 @@ export default {
       this.tagMonthly = [];
       DoorayService.getTags()
         .mergeMap(tags => tags)
-        .subscribe(tag => {
-          this.putTagMap(tag);
+        .do(tag => this.putTagMap(tag))
+        .subscribe(() => {
+          this.tagMD.sort((prev, cur) => {
+            return Number(prev.text) - Number(cur.text);
+          });
         });
     },
     putTagMap(tag) {
       if (tag.name.includes("수행월:")) {
         this.tagMonthly.push(
           Object.assign(tag, {
-            text: tag.name,
+            text: tag.name.substring(4),
             value: tag.id
           })
         );
@@ -430,7 +406,7 @@ export default {
       if (tag.name.includes("MD:")) {
         this.tagMD.push(
           Object.assign(tag, {
-            text: tag.name,
+            text: tag.name.substring(6),
             value: tag.id
           })
         );
@@ -464,25 +440,33 @@ export default {
           return "dark";
       }
     },
-    changeMD(newValue, data) {
-      this.changeTag$(newValue, data, data.item.mdTagId).subscribe(() => {
-        data.item.md = Number(this.tagMap[newValue].text.substring(6));
-        if (isNaN(data.item.md)) {
-          data.item.md = 0;
+    changeMD(newValue, row) {
+      this.changeTag$(newValue, row, row.mdTagId).subscribe(() => {
+        let post = this.rows.find(post => post.id === row.id);
+
+        post.mdTagId = newValue;
+        post.md = Number(this.tagMap[newValue].text);
+        if (isNaN(post.md)) {
+          post.md = 0;
         }
+
         this.calculate();
       });
     },
-    changeWorkMonth(newValue, data) {
-      this.changeTag$(newValue, data, data.item.month).subscribe(() => {});
+    changeWorkMonth(newValue, row) {
+      this.changeTag$(newValue, row, row.month).subscribe(() => {
+        let post = this.rows.find(post => post.id === row.id);
+        post.month = newValue;
+      });
     },
-    changeTag$(newValue, data, preId) {
-      return DoorayService.modifyTags([data.item.id], [preId], [newValue]);
+    changeTag$(newValue, row, preId) {
+      return DoorayService.modifyTags([row.id], [preId], [newValue]);
     },
-    changeMileStone(newValue, data) {
-      DoorayService.modifyMileStone([data.item.id], newValue).subscribe(
-        () => {}
-      );
+    changeMileStone(newValue, row) {
+      DoorayService.modifyMileStone([row.id], newValue).subscribe(() => {
+        let post = this.rows.find(post => post.id === row.id);
+        post.milestoneId = newValue;
+      });
     }
   }
 };
@@ -490,6 +474,6 @@ export default {
 
 <style>
 html * {
-  font-size: 98%;
+  font-size: 13px;
 }
 </style>
