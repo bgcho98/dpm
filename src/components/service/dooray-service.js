@@ -1,8 +1,6 @@
 import axios from "axios";
 import ObservableUtils from "../utils/obserable-utils";
-import {
-  Observable
-} from "rxjs";
+import { Observable } from "rxjs";
 
 const DoorayKey = {
   projectId: "1963480696738741170"
@@ -30,7 +28,8 @@ export const DoorayService = {
   getPosts(page, tagIds) {
     return ObservableUtils.fromPromise(
       axios.get(`/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/posts`, {
-        params: Object.assign({
+        params: Object.assign(
+          {
             order: "-createdAt",
             hasParent: "true",
             page: page,
@@ -54,7 +53,8 @@ export const DoorayService = {
   getMileStones() {
     return ObservableUtils.fromPromise(
       axios.get(
-        `/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/milestones`, {
+        `/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/milestones`,
+        {
           params: {
             size: 10000
           }
@@ -65,7 +65,10 @@ export const DoorayService = {
   modifyTags(postIdList, removeTagIdList, addTagIdList) {
     return ObservableUtils.fromPromise(
       axios.post(
-        `/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/posts/modify-tags`, {
+        `/api/dooray/v2/wapi/projects/!${
+          DoorayKey.projectId
+        }/posts/modify-tags`,
+        {
           postIdList: postIdList,
           addTagIdList: addTagIdList,
           removeTagIdList: removeTagIdList
@@ -76,9 +79,25 @@ export const DoorayService = {
   modifyMileStone(postIdList, milestoneId) {
     return ObservableUtils.fromPromise(
       axios.post(
-        `/api/dooray/v2/wapi/projects/!1963480696738741170/posts/set-milestone`, {
+        `/api/dooray/v2/wapi/projects/!${
+          DoorayKey.projectId
+        }/posts/set-milestone`,
+        {
           postIdList: postIdList,
           milestoneId: milestoneId
+        }
+      )
+    ).map(response => response.header);
+  },
+  modifyDueDate(postNumber, dueDate) {
+    return ObservableUtils.fromPromise(
+      axios.put(
+        `/api/dooray/v2/wapi/projects/!${
+          DoorayKey.projectId
+        }/posts/${postNumber}`,
+        {
+          dueDate: dueDate,
+          dueDateFlag: true
         }
       )
     ).map(response => response.header);

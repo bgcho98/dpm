@@ -10,11 +10,25 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import VueGoodTablePlugin from "vue-good-table";
+import Gantt from "./components/gantt/gantt.vue";
+import flatPickr from "vue-flatpickr-component";
+
+import "./styles/app.scss";
+
+// Usesages
+Vue.use(require("vue-moment"));
+
+// Styles
+import "flatpickr/dist/flatpickr.css";
+
 import "vue-good-table/dist/vue-good-table.css";
 
 library.add(fas);
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
+
+Vue.component("flatPickr", flatPickr);
+Vue.component("Gantt", Gantt);
 
 Vue.use(BootstrapVue);
 Vue.use(VueGoodTablePlugin);

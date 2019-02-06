@@ -46,6 +46,15 @@
         </b-card>
       </div>
       <hr>
+      <gantt
+        v-if="rows.length > 0"
+        :items="rows"
+        :fields="gantt.fields"
+        :date-limit="gantt.dateLimit"
+        @update="updateWokringDate"
+        :title="'스케쥴 조정'"
+      ></gantt>
+      <hr>
       <div v-for="man in manMonthSum" :key="man.name">
         <a :name="man.name">
           <span style="font-size:20px;">{{ man.name }}</span>
@@ -67,11 +76,11 @@
             <template v-if="props.column.field == 'subject'">
               <a :href="getPostLink(props.row.id)" target="_blank">{{ props.row.subject }}</a>
             </template>
-            <template v-else-if="props.column.field == 'parentSubject'">
+            <template v-else-if="props.column.field == 'parent.subject'">
               <a
                 :href="getPostLink(props.row.parent.id)"
                 target="_blank"
-              >{{ props.row.parentSubject }}</a>
+              >{{ props.row.parent.subject }}</a>
             </template>
             <template v-else-if="props.column.field == 'workflowClass'">
               <b-badge
@@ -105,7 +114,6 @@
             <template v-else>{{props.formattedRow[props.column.field]}}</template>
           </template>
         </vue-good-table>
-        <hr>
       </div>
     </div>
   </div>
@@ -115,10 +123,13 @@
 import DoorayService from "./components/service/dooray-service";
 import { Observable } from "rxjs";
 import { VueGoodTable } from "vue-good-table";
+import Gantt from "./components/gantt/gantt.vue";
+import Vue from "vue";
 
 export default {
   components: {
-    VueGoodTable
+    VueGoodTable,
+    Gantt
   },
   created() {
     this.initTagMap();
@@ -126,6 +137,37 @@ export default {
   },
   data() {
     return {
+      gantt: {
+        fields: {
+          summary: {
+            label: "제목",
+            component: "gantt-text",
+            width: 300,
+            placeholder: "Add a new task...",
+            editable: false
+          },
+          start_date: {
+            label: "시작일",
+            component: "gantt-date",
+            width: 70,
+            placeholder: "Start",
+            sort: "date"
+          },
+          end_date: {
+            label: "종료일",
+            component: "gantt-date",
+            width: 70
+          },
+          duration: {
+            label: "Days",
+            component: "gantt-number",
+            width: 50,
+            placeholder: "0",
+            editable: false
+          }
+        },
+        dateLimit: 30
+      },
       rows: [],
       columns: [
         {
@@ -142,7 +184,7 @@ export default {
         },
         {
           label: "상위 업무",
-          field: "parentSubject",
+          field: "parent.subject",
           sortable: true,
           width: "200px"
         },
@@ -248,7 +290,7 @@ export default {
     calculate() {
       this.manMonthSum = [];
       Observable.from(this.rows)
-        .groupBy(issue => issue.assignUserName)
+        .groupBy(post => post.assignUserName)
         .mergeMap(group => {
           return group.reduce(
             (acc, cur) => {
@@ -320,54 +362,52 @@ export default {
     getPostsAll(tagIds) {
       DoorayService.getPostsAll(tagIds)
         .mergeMap(contents => contents)
-        .map(content => {
-          Object.assign(content, {
-            assignUserName: this.getMemberName(content),
-            mileStoneName: this.getMileStoneName(content),
-            parentSubject: content.parent.subject
-          });
-          this.extractTag(content);
-          return content;
+        .map(post => {
+          post.assignUserName = this.getMemberName(post);
+          post.summary = post.subject;
+          this.extractTag(post);
+          this.setScheduleDate(post);
+          return post;
         })
         .toArray()
         .subscribe(contents => {
           this.rows = [...this.rows, ...contents];
         });
     },
-    getMemberName(issue) {
-      let member = issue.users.to[0].member;
+    getMemberName(post) {
+      let member = post.users.to[0].member;
       return member ? member.name : "미지정";
     },
-    getMileStoneName(issue) {
-      let mileStone = this.mileStoneMap[issue.milestoneId];
+    getMileStoneName(post) {
+      let mileStone = this.mileStoneMap[post.milestoneId];
       return mileStone ? mileStone.name : "미지정";
     },
-    extractTag(issue) {
-      issue.tagList = [];
-      for (var i = 0; i < issue.tagIdList.length; i++) {
-        var tagId = issue.tagIdList[i];
+    extractTag(post) {
+      post.tagList = [];
+      for (var i = 0; i < post.tagIdList.length; i++) {
+        var tagId = post.tagIdList[i];
         var tag = this.tagMap[tagId];
 
         if (tag == null) {
           continue;
         }
 
-        issue.tagList.push(tag);
+        post.tagList.push(tag);
 
         if (tag.name.includes("모듈")) {
-          if (issue.module == null) {
-            issue.module = tag.name.substring(4);
+          if (post.module == null) {
+            post.module = tag.name.substring(4);
           }
         } else if (tag.name.includes("작업MD")) {
-          issue.md = Number(tag.name.substring(6));
-          if (isNaN(issue.md)) {
-            issue.md = 0;
+          post.md = Number(tag.name.substring(6));
+          if (isNaN(post.md)) {
+            post.md = 0;
           }
-          issue.mdTagId = tag.id;
+          post.mdTagId = tag.id;
         } else if (tag.name.includes("작업:")) {
-          issue.workType = tag.name.substring(4);
+          post.workType = tag.name.substring(4);
         } else if (tag.name.includes("수행월:")) {
-          issue.month = tag.id;
+          post.month = tag.id;
         }
 
         if (tag.module != null && tag.md != null) {
@@ -375,12 +415,12 @@ export default {
         }
       }
 
-      if (issue.module == null) {
-        issue.module = "미지정";
+      if (post.module == null) {
+        post.module = "미지정";
       }
 
-      if (issue.md == null) {
-        issue.md = 0;
+      if (post.md == null) {
+        post.md = 0;
       }
     },
     initTagMap() {
@@ -448,6 +488,7 @@ export default {
         post.md = Number(this.tagMap[newValue].text);
         if (isNaN(post.md)) {
           post.md = 0;
+          post.duration = post.md;
         }
 
         this.calculate();
@@ -467,6 +508,70 @@ export default {
         let post = this.rows.find(post => post.id === row.id);
         post.milestoneId = newValue;
       });
+    },
+    setScheduleDate(post) {
+      if (post.dueDate) {
+        let endDate = post.dueDate;
+        let diff = post.md - 1;
+        if (diff < 0) {
+          diff = 0;
+        }
+
+        post.start_date = Vue.moment(endDate)
+          .subtract(diff, "d")
+          .format("YYYY-MM-DD 00:00");
+
+        post.end_date = endDate;
+      } else {
+        post.start_date = null;
+        post.end_date = null;
+      }
+      post.duration = post.md;
+    },
+    updateWokringDate(post, field) {
+      let diff = post.md - 1;
+      if (diff < 0) {
+        diff = 0;
+      }
+
+      let isUpdate = false;
+      if (field === "start_date") {
+        let end_date = this.$moment(post.start_date, this.dateFormat)
+          .startOf("day")
+          .add(diff, "d")
+          .endOf("day")
+          .format(this.dateFormat);
+
+        if (
+          post.end_date === null ||
+          this.$moment(end_date).isSame(post.end_date, "day") == false
+        ) {
+          post.end_date = end_date;
+          isUpdate = true;
+        }
+      } else if (field === "end_date") {
+        let start_date = this.$moment(post.end_date, this.dateFormat)
+          .endOf("day")
+          .subtract(diff, "d")
+          .startOf("day")
+          .format(this.dateFormat);
+        if (
+          post.start_date === null ||
+          this.$moment(start_date).isSame(post.start_date, "day") == false
+        ) {
+          post.start_date = start_date;
+          isUpdate = true;
+        }
+      }
+
+      if (isUpdate) {
+        DoorayService.modifyDueDate(
+          post.number,
+          this.$moment(post.end_date).format()
+        );
+        post.dueDate = this.$moment(post.end_date).format();
+      }
+      console.log(field);
     }
   }
 };
@@ -474,6 +579,6 @@ export default {
 
 <style>
 html * {
-  font-size: 13px;
+  font-size: 12px;
 }
 </style>
