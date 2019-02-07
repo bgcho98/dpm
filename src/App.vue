@@ -1,42 +1,41 @@
 <template>
   <div id="app">
     <div class="container-fluid" height="100%">
-      <div>
-        <b-card>
-          <b-form-group label="수행월" :size="'sm'">
-            <b-form-checkbox-group
-              :size="'sm'"
-              v-model="searchMontlyTag"
-              name="flavour1"
-              :options="tagMonthly"
-            ></b-form-checkbox-group>
-          </b-form-group>
-          <b-form-group label="담당자" :size="'sm'">
-            <b-form-checkbox-group
-              :size="'sm'"
-              v-model="searchMembers"
-              name="flavour1"
-              :options="members"
-            ></b-form-checkbox-group>
-          </b-form-group>
-
-          <b-button :size="'sm'" :variant="'success'" @click="search">
+      <b-form>
+        <b-form-group>수행월 :
+          <b-form-checkbox-group
+            :size="'sm'"
+            v-model="searchMontlyTag"
+            name="flavour1"
+            :options="tagMonthly"
+          ></b-form-checkbox-group>
+        </b-form-group>
+        <b-form-group>담당자 :
+          <b-form-checkbox-group
+            :size="'sm'"
+            v-model="searchMembers"
+            name="flavour1"
+            :options="members"
+          ></b-form-checkbox-group>
+        </b-form-group>
+        <b-form-group>
+          <b-button :size="'sm'" :variant="'primary'" @click="search">
             <font-awesome-icon :icon="['fas', 'search']"/>검색
           </b-button>
-        </b-card>
-      </div>
+        </b-form-group>
+      </b-form>
       <div>
         <b-card header="종합">
           <ul id="example-1">
             <li v-for="man in manMonthSum" :key="man.name">
               <a :href="`#${man.name}`">{{ man.name }}</a>
               : {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}
-              <br>--- 모듈별 :
+              <br>모듈별 :
               <span
                 v-for="module in man.statics.module"
                 :key="module.name"
               >{{ module.name }} : {{ module.md.toFixed(1) }} ({{ (module.md*100/man.sum).toFixed(1) }}%),</span>
-              <br>--- 종류별 :
+              <br>종류별 :
               <span
                 v-for="workType in man.statics.workType"
                 :key="workType.name"
@@ -57,10 +56,10 @@
       <hr>
       <div v-for="man in manMonthSum" :key="man.name">
         <a :name="man.name">
-          <span style="font-size:20px;">{{ man.name }}</span>
+          <span style="font-size:20px !important;">{{ man.name }}</span>
         </a>
         <span
-          style="font-size:21px;"
+          style="font-size:21px  !important;;"
         >&nbsp;: {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}</span>
 
         <vue-good-table
@@ -364,7 +363,7 @@ export default {
         .mergeMap(contents => contents)
         .map(post => {
           post.assignUserName = this.getMemberName(post);
-          post.summary = post.subject;
+          post.summary = post.assignUserName + " " + post.subject;
           this.extractTag(post);
           this.setScheduleDate(post);
           return post;
@@ -568,10 +567,10 @@ export default {
     },
     getStartDate(end_date, diff) {
       return this.$bMoment(end_date, this.dateFormat)
-                .endOf("day")
-                .businessSubtract(diff)
-                .startOf("day")
-                .format(this.dateFormat);
+        .endOf("day")
+        .businessSubtract(diff)
+        .startOf("day")
+        .format(this.dateFormat);
     }
   }
 };
@@ -579,6 +578,42 @@ export default {
 
 <style>
 html * {
-  font-size: 12px;
+  font-size: 12px !important;
+}
+
+.card-body {
+  padding: 0.3rem !important;
+}
+
+.col-form-label {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  text-align: right !important;
+  font-weight: bold !important;
+}
+
+.form-control-sm {
+  height: calc(1.1rem + 2px) !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  line-height: 2 !important;
+}
+
+.custom-select-sm {
+  height: calc(1.1rem + 2px) !important;
+  line-height: 1 !important;
+}
+
+.custom-control-label {
+  vertical-align: bottom !important;
+  display: inline-block;
+}
+
+.form-group {
+  margin-bottom: 3px !important;
+}
+
+.card-header {
+  padding: 3px !important;
 }
 </style>

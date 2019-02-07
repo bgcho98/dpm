@@ -768,10 +768,12 @@ export default {
   },
   methods: {
     getDayDiff(item) {
-      return this.$moment(item.end_date, this.dateFormat).diff(
-        this.$moment(item.start_date, this.dateFormat),
-        "d"
-      ) + 1;
+      return (
+        this.$moment(item.end_date, this.dateFormat).diff(
+          this.$moment(item.start_date, this.dateFormat),
+          "d"
+        ) + 1
+      );
     },
     /*
         | Compile the list of items
@@ -1091,6 +1093,13 @@ export default {
         let sort_type = this.localFields[this.sortBy].sort;
         if (sort_type === "date") {
           items.sort(function(a, b) {
+            if (b[self.sortBy] === null) {
+              return -1;
+            }
+
+            if (a[self.sortBy] === null) {
+              return 1;
+            }
             return new Date(a[self.sortBy]) - new Date(b[self.sortBy]);
           });
         }
@@ -1104,8 +1113,11 @@ export default {
         | Get the end_date based on the 
         | generated dates array.
         */
-    dates: function() {
+    dates() {
       this.localEndDate = this.dates[this.dates.length - 1].date;
+    },
+    items() {
+      this.localItems = this.compileItems(this.items);
     }
   }
 };
