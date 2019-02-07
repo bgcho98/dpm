@@ -16,7 +16,7 @@
         :data-row-id="item.id"
         :data-parent-id="item.parentId"
         :class="{ parent : item.isParent }"
-        :style="{ width: (cell_width * item.duration) + 'px' }"
+        :style="{ width: (cell_width * getDayDiff(item)) + 'px' }"
         @mousedown.left="handleMouseDown"
       >
         <div v-if="user && item.user && !item.isParent" class="marker-user">
@@ -94,6 +94,12 @@ export default {
     }
   },
   methods: {
+    getDayDiff(item) {
+      return this.$moment(item.end_date, this.dateFormat).diff(
+        this.$moment(item.start_date, this.dateFormat),
+        "d"
+      ) + 1;
+    },    
     /*
         | Compare 2 given dates 
         */

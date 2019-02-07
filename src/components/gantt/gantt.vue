@@ -536,7 +536,7 @@ $childItemFontSize: 12px;
             <div
               class="marker"
               :class="{ parent : item.isParent }"
-              :style="{ width: (widths.cell * item.duration) + 'px', left: computedOffset(item) }"
+              :style="{ width: (widths.cell * getDayDiff(item)) + 'px', left: computedOffset(item) }"
             ></div>
           </div>
         </div>
@@ -767,6 +767,12 @@ export default {
     });
   },
   methods: {
+    getDayDiff(item) {
+      return this.$moment(item.end_date, this.dateFormat).diff(
+        this.$moment(item.start_date, this.dateFormat),
+        "d"
+      ) + 1;
+    },
     /*
         | Compile the list of items
         | This will flatten the multidimentional array
@@ -996,7 +1002,7 @@ export default {
         | Handle when a new chart date has updated
         */
     dateUpdated(itemId, newDate) {
-      let item = this.localItems.find(item => item.id === parseInt(itemId));
+      let item = this.localItems.find(item => item.id === itemId);
       item.start_date = newDate;
     },
     /*

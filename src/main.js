@@ -15,9 +15,6 @@ import flatPickr from "vue-flatpickr-component";
 
 import "./styles/app.scss";
 
-// Usesages
-Vue.use(require("vue-moment"));
-
 // Styles
 import "flatpickr/dist/flatpickr.css";
 
@@ -26,6 +23,7 @@ import "vue-good-table/dist/vue-good-table.css";
 library.add(fas);
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
+Vue.use(require("vue-moment"));
 
 Vue.component("flatPickr", flatPickr);
 Vue.component("Gantt", Gantt);
@@ -33,6 +31,16 @@ Vue.component("Gantt", Gantt);
 Vue.use(BootstrapVue);
 Vue.use(VueGoodTablePlugin);
 Vue.config.productionTip = false;
+
+Vue.use({
+  install: Vue => {
+    Vue.bMoment = Vue.prototype.$bMoment = require("moment-business-days");
+  }
+});
+
+Vue.bMoment.updateLocale("ko_kr", {
+  workingWeekdays: [1, 2, 3, 4, 5]
+});
 
 axios.defaults.headers.common["Cache-control"] =
   "no-store, no-cache, must-revalidate";

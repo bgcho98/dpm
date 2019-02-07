@@ -517,10 +517,7 @@ export default {
           diff = 0;
         }
 
-        post.start_date = Vue.moment(endDate)
-          .subtract(diff, "d")
-          .format("YYYY-MM-DD 00:00");
-
+        post.start_date = this.getStartDate(endDate, diff);
         post.end_date = endDate;
       } else {
         post.start_date = null;
@@ -536,9 +533,9 @@ export default {
 
       let isUpdate = false;
       if (field === "start_date") {
-        let end_date = this.$moment(post.start_date, this.dateFormat)
+        let end_date = this.$bMoment(post.start_date, this.dateFormat)
           .startOf("day")
-          .add(diff, "d")
+          .businessAdd(diff)
           .endOf("day")
           .format(this.dateFormat);
 
@@ -550,11 +547,7 @@ export default {
           isUpdate = true;
         }
       } else if (field === "end_date") {
-        let start_date = this.$moment(post.end_date, this.dateFormat)
-          .endOf("day")
-          .subtract(diff, "d")
-          .startOf("day")
-          .format(this.dateFormat);
+        let start_date = this.getStartDate(post.end_date, diff);
         if (
           post.start_date === null ||
           this.$moment(start_date).isSame(post.start_date, "day") == false
@@ -572,6 +565,13 @@ export default {
         post.dueDate = this.$moment(post.end_date).format();
       }
       console.log(field);
+    },
+    getStartDate(end_date, diff) {
+      return this.$bMoment(end_date, this.dateFormat)
+                .endOf("day")
+                .businessSubtract(diff)
+                .startOf("day")
+                .format(this.dateFormat);
     }
   }
 };
