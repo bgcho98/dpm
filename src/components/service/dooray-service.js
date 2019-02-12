@@ -33,12 +33,16 @@ export const DoorayService = {
             order: "-createdAt",
             hasParent: "true",
             page: page,
-            size: 30,
-            tagIds: tagIds
+            size: 30
           },
           tagIds
         )
       })
+    ).map(response => response.data.result.contents);
+  },
+  getSubPosts(number) {
+    return ObservableUtils.fromPromise(
+      axios.get(`/api/dooray/v2/wapi/projects/!${DoorayKey.projectId}/posts/${number}/sub-posts`)
     ).map(response => response.data.result.contents);
   },
   getTags() {

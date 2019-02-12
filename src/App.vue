@@ -1,12 +1,28 @@
 <template>
   <div id="app">
-    <div class="container-fluid" height="100%">
+    <div
+      class="container-fluid"
+      height="100%"
+    >
       <b-form>
+        <b-form-group>상위 업무 마일스톤으로 검색 :
+          <b-form-checkbox-group
+            :size="'sm'"
+            v-model="searchParentMileStone"
+            :options="filteredParentMileStone"
+          ></b-form-checkbox-group>
+        </b-form-group>
+        <b-form-group>만기일 :
+          <b-form-checkbox-group
+            :size="'sm'"
+            v-model="searchDueDate"
+            :options="dueDateMonth"
+          ></b-form-checkbox-group>
+        </b-form-group>
         <b-form-group>수행월 :
           <b-form-checkbox-group
             :size="'sm'"
             v-model="searchMontlyTag"
-            name="flavour1"
             :options="tagMonthly"
           ></b-form-checkbox-group>
         </b-form-group>
@@ -14,20 +30,26 @@
           <b-form-checkbox-group
             :size="'sm'"
             v-model="searchMembers"
-            name="flavour1"
             :options="members"
           ></b-form-checkbox-group>
         </b-form-group>
         <b-form-group>
-          <b-button :size="'sm'" :variant="'primary'" @click="search">
-            <font-awesome-icon :icon="['fas', 'search']"/>검색
+          <b-button
+            :size="'sm'"
+            :variant="'primary'"
+            @click="search"
+          >
+            <font-awesome-icon :icon="['fas', 'search']" />검색
           </b-button>
         </b-form-group>
       </b-form>
       <div>
         <b-card header="종합">
           <ul id="example-1">
-            <li v-for="man in manMonthSum" :key="man.name">
+            <li
+              v-for="man in manMonthSum"
+              :key="man.name"
+            >
               <a :href="`#${man.name}`">{{ man.name }}</a>
               : {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}
               <br>모듈별 :
@@ -54,13 +76,14 @@
         :title="'스케쥴 조정'"
       ></gantt>
       <hr>
-      <div v-for="man in manMonthSum" :key="man.name">
+      <div
+        v-for="man in manMonthSum"
+        :key="man.name"
+      >
         <a :name="man.name">
           <span style="font-size:20px !important;">{{ man.name }}</span>
         </a>
-        <span
-          style="font-size:21px  !important;;"
-        >&nbsp;: {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}</span>
+        <span style="font-size:21px  !important;;">&nbsp;: {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}</span>
 
         <vue-good-table
           :rows="man.posts"
@@ -71,9 +94,15 @@
             initialSortBy: {field: 'workflowClass', type: 'desc'}
           }"
         >
-          <template slot="table-row" slot-scope="props">
+          <template
+            slot="table-row"
+            slot-scope="props"
+          >
             <template v-if="props.column.field == 'subject'">
-              <a :href="getPostLink(props.row.id)" target="_blank">{{ props.row.subject }}</a>
+              <a
+                :href="getPostLink(props.row.id)"
+                target="_blank"
+              >{{ props.row.subject }}</a>
             </template>
             <template v-else-if="props.column.field == 'parent.subject'">
               <a
@@ -82,9 +111,7 @@
               >{{ props.row.parent.subject }}</a>
             </template>
             <template v-else-if="props.column.field == 'workflowClass'">
-              <b-badge
-                :variant="getWorkflowColor(props.row.workflowClass)"
-              >{{ props.row.workflowClass }}</b-badge>
+              <b-badge :variant="getWorkflowColor(props.row.workflowClass)">{{ props.row.workflowClass }}</b-badge>
             </template>
             <template v-else-if="props.column.field == 'month'">
               <b-form-select
@@ -123,7 +150,6 @@ import DoorayService from "./components/service/dooray-service";
 import { Observable } from "rxjs";
 import { VueGoodTable } from "vue-good-table";
 import Gantt from "./components/gantt/gantt.vue";
-import Vue from "vue";
 
 export default {
   components: {
@@ -131,6 +157,7 @@ export default {
     Gantt
   },
   created() {
+    this.initDueDateMonth();
     this.initTagMap();
     this.initMileStones();
   },
@@ -220,11 +247,14 @@ export default {
       tagMap: [],
       tagMonthly: [],
       tagMD: [],
+      dueDateMonth: [],
       manMonthSum: [],
       mileStoneMap: [],
       mileStoneArray: [],
       searchMontlyTag: [],
+      searchDueDate: [],
       searchMembers: [],
+      searchParentMileStone: [],
       members: [
         {
           text: "조병걸",
@@ -272,6 +302,18 @@ export default {
   watch: {
     rows() {
       this.calculate();
+    }
+  },
+  computed: {
+    filteredParentMileStone() {
+      return this.mileStoneArray
+        .filter(mileStone => mileStone.text.length == 7)
+        .map(mileStone => {
+          return {
+            text: mileStone.text,
+            value: mileStone.id
+          };
+        });
     }
   },
   methods: {
@@ -333,8 +375,12 @@ export default {
         .subscribe(group => this.manMonthSum.push(group));
     },
     validate() {
-      if (this.searchMontlyTag.length < 1) {
-        alert("조건을 선택하세요");
+      if (
+        this.searchMontlyTag.length < 1 &&
+        this.searchDueDate.length < 1 &&
+        this.searchParentMileStone < 1
+      ) {
+        alert("만기일이나 상위업무 마일스톤을 선택하세요");
         throw "조건이 없음.";
       }
     },
@@ -346,8 +392,16 @@ export default {
         tagOp: "or"
       };
 
+      if (this.searchDueDate.length > 0) {
+        tagIds = Object.assign(tagIds, {
+          dueAt: this.getSearchDueDate()
+        });
+      }
+
       this.rows = [];
-      if (this.searchMembers.length > 0) {
+      if (this.searchParentMileStone.length > 0) {
+        this.getPostsAllByParent();
+      } else if (this.searchMembers.length > 0) {
         for (var i = 0; i < this.searchMembers.length; i++) {
           Object.assign(tagIds, {
             toMemberIds: this.searchMembers[i]
@@ -358,16 +412,34 @@ export default {
         this.getPostsAll(tagIds);
       }
     },
+    getPostsAllByParent() {
+      DoorayService.getPostsAll({
+        milestoneIds: this.searchParentMileStone.join(","),
+        milestoneOp: "or",
+        hasParent: false
+      })
+        .mergeMap(contents => contents)
+        .mergeMap(post => {
+          return DoorayService.getSubPosts(post.number);
+        })
+        .mergeMap(contents => contents)
+        .map(post => this.extractPost(post))
+        .toArray()
+        .subscribe(contents => {
+          this.rows = [...this.rows, ...contents];
+        });
+    },
+    extractPost(post) {
+      post.assignUserName = this.getMemberName(post);
+      post.summary = post.assignUserName + " " + post.subject;
+      this.extractTag(post);
+      this.setScheduleDate(post);
+      return post;
+    },
     getPostsAll(tagIds) {
       DoorayService.getPostsAll(tagIds)
         .mergeMap(contents => contents)
-        .map(post => {
-          post.assignUserName = this.getMemberName(post);
-          post.summary = post.assignUserName + " " + post.subject;
-          this.extractTag(post);
-          this.setScheduleDate(post);
-          return post;
-        })
+        .map(post => this.extractPost(post))
         .toArray()
         .subscribe(contents => {
           this.rows = [...this.rows, ...contents];
@@ -571,6 +643,31 @@ export default {
         .businessSubtract(diff)
         .startOf("day")
         .format(this.dateFormat);
+    },
+    initDueDateMonth() {
+      this.dueDateMonth = [];
+      let months = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
+      months.forEach(month => {
+        this.dueDateMonth.push({
+          text: this.$moment()
+            .months(month)
+            .format("YYYY.MM"),
+          value: month
+        });
+      });
+    },
+    getSearchDueDate() {
+      let start = this.$moment()
+        .months(this.searchDueDate[0])
+        .startOf("month")
+        .format("YYYY-MM-DDT00:00:00+09:00");
+      let end = this.$moment()
+        .months(this.searchDueDate[this.searchDueDate.length - 1])
+        .endOf("month")
+        .format("YYYY-MM-DDT23:59:59+09:00");
+
+      return `${start}~${end}`;
     }
   }
 };
