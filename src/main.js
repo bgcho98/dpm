@@ -19,6 +19,7 @@ import "./styles/app.scss";
 import "flatpickr/dist/flatpickr.css";
 
 import "vue-good-table/dist/vue-good-table.css";
+import HolidayService from "./components/service/holiday-service";
 
 library.add(fas);
 
@@ -39,6 +40,8 @@ Vue.use({
 });
 
 Vue.bMoment.updateLocale("ko_kr", {
+  holidays: HolidayService.getHoliday(),
+  holidayFormat: "YYYY.MM.DD",
   workingWeekdays: [1, 2, 3, 4, 5]
 });
 

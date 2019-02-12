@@ -1,9 +1,6 @@
 <template>
   <div id="app">
-    <div
-      class="container-fluid"
-      height="100%"
-    >
+    <div class="container-fluid" height="100%">
       <b-form>
         <b-form-group>상위 업무 마일스톤으로 검색 :
           <b-form-checkbox-group
@@ -13,43 +10,24 @@
           ></b-form-checkbox-group>
         </b-form-group>
         <b-form-group>만기일 :
-          <b-form-checkbox-group
-            :size="'sm'"
-            v-model="searchDueDate"
-            :options="dueDateMonth"
-          ></b-form-checkbox-group>
+          <b-form-checkbox-group :size="'sm'" v-model="searchDueDate" :options="dueDateMonth"></b-form-checkbox-group>
         </b-form-group>
         <b-form-group>수행월 :
-          <b-form-checkbox-group
-            :size="'sm'"
-            v-model="searchMontlyTag"
-            :options="tagMonthly"
-          ></b-form-checkbox-group>
+          <b-form-checkbox-group :size="'sm'" v-model="searchMontlyTag" :options="tagMonthly"></b-form-checkbox-group>
         </b-form-group>
         <b-form-group>담당자 :
-          <b-form-checkbox-group
-            :size="'sm'"
-            v-model="searchMembers"
-            :options="members"
-          ></b-form-checkbox-group>
+          <b-form-checkbox-group :size="'sm'" v-model="searchMembers" :options="members"></b-form-checkbox-group>
         </b-form-group>
         <b-form-group>
-          <b-button
-            :size="'sm'"
-            :variant="'primary'"
-            @click="search"
-          >
-            <font-awesome-icon :icon="['fas', 'search']" />검색
+          <b-button :size="'sm'" :variant="'primary'" @click="search">
+            <font-awesome-icon :icon="['fas', 'search']"/>검색
           </b-button>
         </b-form-group>
       </b-form>
       <div>
         <b-card header="종합">
           <ul id="example-1">
-            <li
-              v-for="man in manMonthSum"
-              :key="man.name"
-            >
+            <li v-for="man in manMonthSum" :key="man.name">
               <a :href="`#${man.name}`">{{ man.name }}</a>
               : {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}
               <br>모듈별 :
@@ -76,14 +54,13 @@
         :title="'스케쥴 조정'"
       ></gantt>
       <hr>
-      <div
-        v-for="man in manMonthSum"
-        :key="man.name"
-      >
+      <div v-for="man in manMonthSum" :key="man.name">
         <a :name="man.name">
           <span style="font-size:20px !important;">{{ man.name }}</span>
         </a>
-        <span style="font-size:21px  !important;;">&nbsp;: {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}</span>
+        <span
+          style="font-size:21px  !important;;"
+        >&nbsp;: {{ (man.sum).toFixed(1) }} MD , 완료 {{ man.closedSum.toFixed(1) }}, 미완료 {{ (man.sum - man.closedSum).toFixed(1) }}</span>
 
         <vue-good-table
           :rows="man.posts"
@@ -94,15 +71,9 @@
             initialSortBy: {field: 'workflowClass', type: 'desc'}
           }"
         >
-          <template
-            slot="table-row"
-            slot-scope="props"
-          >
+          <template slot="table-row" slot-scope="props">
             <template v-if="props.column.field == 'subject'">
-              <a
-                :href="getPostLink(props.row.id)"
-                target="_blank"
-              >{{ props.row.subject }}</a>
+              <a :href="getPostLink(props.row.id)" target="_blank">{{ props.row.subject }}</a>
             </template>
             <template v-else-if="props.column.field == 'parent.subject'">
               <a
@@ -111,7 +82,9 @@
               >{{ props.row.parent.subject }}</a>
             </template>
             <template v-else-if="props.column.field == 'workflowClass'">
-              <b-badge :variant="getWorkflowColor(props.row.workflowClass)">{{ props.row.workflowClass }}</b-badge>
+              <b-badge
+                :variant="getWorkflowColor(props.row.workflowClass)"
+              >{{ props.row.workflowClass }}</b-badge>
             </template>
             <template v-else-if="props.column.field == 'month'">
               <b-form-select
@@ -307,12 +280,18 @@ export default {
   computed: {
     filteredParentMileStone() {
       return this.mileStoneArray
-        .filter(mileStone => mileStone.text.length == 7)
+        .filter(
+          mileStone =>
+            mileStone.text.length == 7 && mileStone.text.charAt(4) == "."
+        )
         .map(mileStone => {
           return {
             text: mileStone.text,
             value: mileStone.id
           };
+        })
+        .sort((a, b) => {
+          return a.text.localeCompare(b.text);
         });
     }
   },
@@ -424,10 +403,20 @@ export default {
         })
         .mergeMap(contents => contents)
         .map(post => this.extractPost(post))
+        .filter(post => this.fitlerSearchMember(post))
         .toArray()
         .subscribe(contents => {
           this.rows = [...this.rows, ...contents];
         });
+    },
+    fitlerSearchMember(post) {
+      if (this.searchMembers.length == 0) {
+        return true;
+      }
+
+      return this.searchMembers.includes(
+        post.users.to[0].member.organizationMemberId
+      );
     },
     extractPost(post) {
       post.assignUserName = this.getMemberName(post);
