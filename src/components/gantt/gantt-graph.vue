@@ -3,7 +3,7 @@
     <div
       ref="cells"
       class="table-cell"
-      :class="{ weekend: isWeekend(date.date), 'hidden-date' : !date.shown }"
+      :class="{ weekend: !date.isBusinessDay, 'hidden-date' : !date.shown }"
       :style="{ width: cell_width + 'px' }"
       v-for="(date, key) in dates"
       :key="key"

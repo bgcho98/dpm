@@ -12,9 +12,6 @@
         <b-form-group>만기일 :
           <b-form-checkbox-group :size="'sm'" v-model="searchDueDate" :options="dueDateMonth"></b-form-checkbox-group>
         </b-form-group>
-        <b-form-group>수행월 :
-          <b-form-checkbox-group :size="'sm'" v-model="searchMontlyTag" :options="tagMonthly"></b-form-checkbox-group>
-        </b-form-group>
         <b-form-group>담당자 :
           <b-form-checkbox-group :size="'sm'" v-model="searchMembers" :options="members"></b-form-checkbox-group>
         </b-form-group>
@@ -85,14 +82,6 @@
               <b-badge
                 :variant="getWorkflowColor(props.row.workflowClass)"
               >{{ props.row.workflowClass }}</b-badge>
-            </template>
-            <template v-else-if="props.column.field == 'month'">
-              <b-form-select
-                v-model="props.row.month"
-                :options="tagMonthly"
-                @change="changeWorkMonth($event, props.row)"
-                size="sm"
-              />
             </template>
             <template v-else-if="props.column.field == 'mdTagId'">
               <b-form-select
@@ -209,22 +198,14 @@ export default {
           field: "mdTagId",
           width: "70px",
           sortable: true
-        },
-        {
-          label: "수행월",
-          field: "month",
-          width: "100px",
-          sortable: true
         }
       ],
       tagMap: [],
-      tagMonthly: [],
       tagMD: [],
       dueDateMonth: [],
       manMonthSum: [],
       mileStoneMap: [],
       mileStoneArray: [],
-      searchMontlyTag: [],
       searchDueDate: [],
       searchMembers: [],
       searchParentMileStone: [],
@@ -354,11 +335,7 @@ export default {
         .subscribe(group => this.manMonthSum.push(group));
     },
     validate() {
-      if (
-        this.searchMontlyTag.length < 1 &&
-        this.searchDueDate.length < 1 &&
-        this.searchParentMileStone < 1
-      ) {
+      if ( this.searchDueDate.length < 1 && this.searchParentMileStone < 1) {
         alert("만기일이나 상위업무 마일스톤을 선택하세요");
         throw "조건이 없음.";
       }
@@ -366,10 +343,7 @@ export default {
     search() {
       this.validate();
 
-      let tagIds = {
-        tagIds: this.searchMontlyTag.join(","),
-        tagOp: "or"
-      };
+      let tagIds = {};
 
       if (this.searchDueDate.length > 0) {
         tagIds = Object.assign(tagIds, {
@@ -421,6 +395,7 @@ export default {
     extractPost(post) {
       post.assignUserName = this.getMemberName(post);
       post.summary = post.assignUserName + " " + post.subject;
+      post.link = this.getPostLink(post.id);
       this.extractTag(post);
       this.setScheduleDate(post);
       return post;
@@ -435,7 +410,11 @@ export default {
         });
     },
     getMemberName(post) {
-      let member = post.users.to[0].member;
+      console.log(post.users);
+      let member;
+      if (post.users.to.length != 0) {
+        member = post.users.to[0].member;
+      }
       return member ? member.name : "미지정";
     },
     getMileStoneName(post) {
@@ -484,7 +463,7 @@ export default {
       }
     },
     initTagMap() {
-      this.tagMonthly = [];
+      this.tagMD = [];
       DoorayService.getTags()
         .mergeMap(tags => tags)
         .do(tag => this.putTagMap(tag))
@@ -495,14 +474,6 @@ export default {
         });
     },
     putTagMap(tag) {
-      if (tag.name.includes("수행월:")) {
-        this.tagMonthly.push(
-          Object.assign(tag, {
-            text: tag.name.substring(4),
-            value: tag.id
-          })
-        );
-      }
       if (tag.name.includes("MD:")) {
         this.tagMD.push(
           Object.assign(tag, {

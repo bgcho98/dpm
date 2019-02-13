@@ -1,5 +1,8 @@
 <template>
   <div :style="{ width : width + 'px', disabled: !editable }">
+    <b-button :size="'sm'" :variant="'outline-primary'" @click="moveLink(link)">
+      <font-awesome-icon :icon="['fas', 'link']"/>
+    </b-button>
     <input
       ref="input"
       class="cell"
@@ -49,12 +52,18 @@ export default {
     placeholder: {
       type: String,
       default: "Add a new task..."
+    },
+    link: {
+      type: String
     }
   },
   methods: {
     onUpdate(value) {
       this.$emit("input", value);
       this.$emit("update");
+    },
+    moveLink(link) {
+      window.open(link, "_blank");
     }
   }
 };

@@ -122,6 +122,11 @@ $childItemFontSize: 12px;
           font-size: 12px;
           margin-right: 5px;
         }
+        .day-holiday {
+          font-size: 12px;
+          margin-right: 5px;
+          color: red;
+        }
         .month {
           font-size: 10px;
         }
@@ -428,7 +433,8 @@ $childItemFontSize: 12px;
             v-for="(date, key) in dates"
             :key="key"
           >
-            <span class="day">{{ date.date | moment('D') }}</span>
+            <span v-if="date.isBusinessDay" class="day">{{ date.date | moment('D') }}</span>
+            <span v-else class="day-holiday">{{ date.date | moment('D') }}</span>
           </div>
         </div>
       </div>
@@ -483,6 +489,7 @@ $childItemFontSize: 12px;
                   :width="localFields[field].width"
                   @update="cellUpdated(localFields[field].callback, item, field)"
                   :editable="localFields[field].editable"
+                  :link="item.link"
                 ></gantt-text>
                 <gantt-date
                   v-if="localFields[field].component === 'gantt-date'"
@@ -1073,11 +1080,12 @@ export default {
     dates() {
       let dates = [];
       for (let index = 0; index < this.localDateLimit; index++) {
+        let date = this.$bMoment(this.localStartDate, this.dateFormat)
+                       .add(index, "days");
         dates.push({
           shown: true,
-          date: this.$moment(this.localStartDate, this.dateFormat)
-            .add(index, "days")
-            .format(this.dateFormat)
+          date: date.format(this.dateFormat),
+          isBusinessDay: date.isBusinessDay()
         });
       }
       return dates;
