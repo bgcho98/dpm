@@ -618,7 +618,7 @@ export default {
             editable: true
           },
           duration: {
-            label: "Days",
+            label: "MD",
             component: "gantt-number",
             width: 50,
             placeholder: "0",
@@ -1080,8 +1080,10 @@ export default {
     dates() {
       let dates = [];
       for (let index = 0; index < this.localDateLimit; index++) {
-        let date = this.$bMoment(this.localStartDate, this.dateFormat)
-                       .add(index, "days");
+        let date = this.$bMoment(this.localStartDate, this.dateFormat).add(
+          index,
+          "days"
+        );
         dates.push({
           shown: true,
           date: date.format(this.dateFormat),

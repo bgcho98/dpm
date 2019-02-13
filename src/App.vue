@@ -174,7 +174,7 @@ export default {
             width: 70
           },
           duration: {
-            label: "Days",
+            label: "MD",
             component: "gantt-number",
             width: 50,
             placeholder: "0",
