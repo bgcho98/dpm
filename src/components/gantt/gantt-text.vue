@@ -1,6 +1,12 @@
 <template>
   <div :style="{ width : width + 'px', disabled: !editable }">
-    <b-button :size="'sm'" :variant="'outline-primary'" @click="moveLink(link)">
+    <b-button
+      :size="'sm'"
+      :variant="'outline-primary'"
+      @click="moveLink(link)"
+      v-b-tooltip.html.right
+      :title="value"
+    >
       <font-awesome-icon :icon="['fas', 'link']"/>
     </b-button>
     <input
