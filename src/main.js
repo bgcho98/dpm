@@ -21,6 +21,12 @@ import "flatpickr/dist/flatpickr.css";
 import "vue-good-table/dist/vue-good-table.css";
 import HolidayService from "./components/service/holiday-service";
 
+import { VueSpinners } from "@saeris/vue-spinners";
+import BlockUI from "vue-blockui";
+
+Vue.use(BlockUI);
+Vue.use(VueSpinners);
+
 library.add(fas);
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);

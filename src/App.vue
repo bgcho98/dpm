@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <BlockUI v-if="isLoading" :url="pathGifLoading"/>
     <div class="container-fluid" height="100%">
       <b-form>
         <b-form-group>상위 업무 마일스톤으로 검색 :
@@ -112,6 +113,9 @@ import DoorayService from "./components/service/dooray-service";
 import { Observable } from "rxjs";
 import { VueGoodTable } from "vue-good-table";
 import Gantt from "./components/gantt/gantt.vue";
+import pathGifLoading from "./assets/img/toast-console-loading.gif";
+import { mapState, mapMutations } from "vuex";
+import axios from "axios";
 
 export default {
   components: {
@@ -119,12 +123,35 @@ export default {
     Gantt
   },
   created() {
+    axios.interceptors.request.use(
+      config => {
+        this.startLoading();
+        return config;
+      },
+      error => {
+        this.endLoading();
+        return Promise.reject(error);
+      }
+    );
+
+    // Add a response interceptor
+    axios.interceptors.response.use(
+      response => {
+        this.endLoading();
+        return response;
+      },
+      error => {
+        this.endLoading();
+        return Promise.reject(error);
+      }
+    );
     this.initDueDateMonth();
     this.initTagMap();
     this.initMileStones();
   },
   data() {
     return {
+      pathGifLoading: pathGifLoading,
       gantt: {
         fields: {
           summary: {
@@ -259,6 +286,9 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      isLoading: state => state.isLoading
+    }),
     filteredParentMileStone() {
       return this.mileStoneArray
         .filter(
@@ -277,6 +307,7 @@ export default {
     }
   },
   methods: {
+    ...mapMutations(["startLoading", "endLoading"]),
     setGroupMD(groupMap, groupArray, groupName, md) {
       if (groupMap[groupName] == undefined) {
         groupMap[groupName] = {
@@ -289,6 +320,7 @@ export default {
       groupMap[groupName].md += md;
     },
     calculate() {
+      this.startLoading();
       this.manMonthSum = [];
       Observable.from(this.rows)
         .groupBy(post => post.assignUserName)
@@ -332,10 +364,13 @@ export default {
             }
           );
         })
-        .subscribe(group => this.manMonthSum.push(group));
+        .subscribe(group => {
+          this.manMonthSum.push(group);
+          this.endLoading();
+        });
     },
     validate() {
-      if ( this.searchDueDate.length < 1 && this.searchParentMileStone < 1) {
+      if (this.searchDueDate.length < 1 && this.searchParentMileStone < 1) {
         alert("만기일이나 상위업무 마일스톤을 선택하세요");
         throw "조건이 없음.";
       }
@@ -672,5 +707,17 @@ html * {
 
 .card-header {
   padding: 3px !important;
+}
+
+.loading-container .loading-backdrop {
+  opacity: 0.5 !important;
+}
+.loading-container .loading {
+  width: 54px !important;
+  height: 54px !important;
+  left: 50% !important;
+  line-height: 1 !important;
+  padding: 0px 0px !important;
+  border-radius: 0px !important;
 }
 </style>
