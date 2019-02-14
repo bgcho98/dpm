@@ -3,7 +3,7 @@
     <div
       ref="cells"
       class="table-cell"
-      :class="{ weekend: !date.isBusinessDay, 'hidden-date' : !date.shown }"
+      :class="{ weekend: !date.isBusinessDay, 'hidden-date' : !date.shown, today: isToday(date.date) }"
       :style="{ width: cell_width + 'px' }"
       v-for="(date, key) in dates"
       :key="key"
@@ -95,11 +95,13 @@ export default {
   },
   methods: {
     getDayDiff(item) {
-      return this.$moment(item.end_date, this.dateFormat).diff(
-        this.$moment(item.start_date, this.dateFormat),
-        "d"
-      ) + 1;
-    },    
+      return (
+        this.$moment(item.end_date, this.dateFormat).diff(
+          this.$moment(item.start_date, this.dateFormat),
+          "d"
+        ) + 1
+      );
+    },
     /*
         | Compare 2 given dates 
         */
@@ -115,6 +117,11 @@ export default {
     isWeekend(date) {
       let day = new Date(date).getDay();
       return day === 6 || day === 0;
+    },
+    isToday(date) {
+      return (
+        this.$moment(date).format("Y-M-D") === this.$moment().format("Y-M-D")
+      );
     },
     /*
         | Handle when a marker has been clicked

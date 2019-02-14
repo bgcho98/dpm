@@ -232,6 +232,9 @@ $childItemFontSize: 12px;
         &.weekend {
           background: #e8e8e8;
         }
+        &.today {
+          background: #f4e109;
+        }
         &.toggler {
           width: 20px;
         }
