@@ -320,8 +320,11 @@ export default {
       groupMap[groupName].md += md;
     },
     calculate() {
-      this.startLoading();
       this.manMonthSum = [];
+      if (this.rows.length == 0) {
+        return;
+      }
+      this.startLoading();
       Observable.from(this.rows)
         .groupBy(post => post.assignUserName)
         .mergeMap(group => {
