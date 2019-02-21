@@ -493,6 +493,7 @@ $childItemFontSize: 12px;
                   @update="cellUpdated(localFields[field].callback, item, field)"
                   :editable="localFields[field].editable"
                   :link="item.link"
+                  :id="item.id"
                 ></gantt-text>
                 <gantt-date
                   v-if="localFields[field].component === 'gantt-date'"
@@ -727,7 +728,7 @@ export default {
       localEndDate: this.endDate,
       localDateLimit: this.dateLimit,
       requiredFields: ["start_date", "end_date", "duration"],
-      sortBy: false,
+      sortBy: "start_date",
       message: {
         show: false,
         type: "",

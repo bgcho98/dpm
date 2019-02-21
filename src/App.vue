@@ -68,6 +68,7 @@
             enabled: true,
             initialSortBy: {field: 'workflowClass', type: 'desc'}
           }"
+          :row-style-class="rowStyleClassFn"
         >
           <template slot="table-row" slot-scope="props">
             <template v-if="props.column.field == 'subject'">
@@ -80,9 +81,11 @@
               >{{ props.row.parent.subject }}</a>
             </template>
             <template v-else-if="props.column.field == 'workflowClass'">
-              <b-badge
-                :variant="getWorkflowColor(props.row.workflowClass)"
-              >{{ props.row.workflowClass }}</b-badge>
+              <a :name="`${props.row.id}`">
+                <b-badge
+                  :variant="getWorkflowColor(props.row.workflowClass)"
+                >{{ props.row.workflowClass }}</b-badge>
+              </a>
             </template>
             <template v-else-if="props.column.field == 'mdTagId'">
               <b-form-select
@@ -148,9 +151,17 @@ export default {
     this.initDueDateMonth();
     this.initTagMap();
     this.initMileStones();
+
+    this.locationHash = window.location.hash;
+
+    window.addEventListener("hashchange", () => {
+      this.locationHash = window.location.hash;
+      console.log(window.location.hash);
+    });
   },
   data() {
     return {
+      locationHash: "",
       pathGifLoading: pathGifLoading,
       gantt: {
         fields: {
@@ -528,12 +539,18 @@ export default {
       this.mileStoneArray = [];
       DoorayService.getMileStones()
         .mergeMap(mileStones => mileStones)
-        .subscribe(mileStone => {
+        .map(mileStone => {
           this.mileStoneMap[mileStone.id] = Object.assign(mileStone, {
             text: mileStone.name,
             value: mileStone.id
           });
-          this.mileStoneArray.push(this.mileStoneMap[mileStone.id]);
+          return this.mileStoneMap[mileStone.id];
+        })
+        .toArray()
+        .subscribe(mileStones => {
+          this.mileStoneArray = mileStones.sort((a, b) => {
+            return b.name.localeCompare(a.name);
+          });
         });
     },
     getPostLink(postId) {
@@ -666,6 +683,10 @@ export default {
         .format("YYYY-MM-DDT23:59:59+09:00");
 
       return `${start}~${end}`;
+    },
+    rowStyleClassFn(row) {
+      console.log(this.locationHash);
+      return `#${row.id}` === this.locationHash ? "green" : "white";
     }
   }
 };
@@ -722,5 +743,9 @@ html * {
   line-height: 1 !important;
   padding: 0px 0px !important;
   border-radius: 0px !important;
+}
+
+.green {
+  border: 2px solid goldenrod;
 }
 </style>

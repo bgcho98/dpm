@@ -9,6 +9,9 @@
     >
       <font-awesome-icon :icon="['fas', 'link']"/>
     </b-button>
+    <b-button :size="'sm'" :variant="'outline-primary'" @click="moveLinkInPage(id)">
+      <font-awesome-icon :icon="['fas', 'arrow-alt-circle-down']"/>
+    </b-button>
     <input
       ref="input"
       class="cell"
@@ -61,6 +64,9 @@ export default {
     },
     link: {
       type: String
+    },
+    id: {
+      type: String
     }
   },
   methods: {
@@ -70,6 +76,9 @@ export default {
     },
     moveLink(link) {
       window.open(link, "_blank");
+    },
+    moveLinkInPage(id) {
+      location.href = `#${id}`;
     }
   }
 };
