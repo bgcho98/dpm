@@ -11,11 +11,11 @@
       <div
         ref="marker"
         class="marker"
-        v-if="compareDate(date.date, item.start_date, item)"
+        v-if="compareDate(date.date, item.start_date, item.end_date, item)"
         :data-cell-id="key + 1"
         :data-row-id="item.id"
         :data-parent-id="item.parentId"
-        :class="{ parent : item.isParent }"
+        :class="{ parent: item.isParent, [item.workflowClass]: item.workflowClass }"
         :style="{ width: (cell_width * getDayDiff(item)) + 'px' }"
         @mousedown.left="handleMouseDown"
       >
@@ -26,8 +26,8 @@
         <div
           v-if="item.progress"
           class="marker-progress"
-          :class="{ completed : item.progress > 96 }"
-          :style="{ width: + item.progress + '%'}"
+          :class="{ completed: item.progress > 96 }"
+          :style="{ width: item.progress + '%'}"
         ></div>
       </div>
     </div>
@@ -95,9 +95,13 @@ export default {
   },
   methods: {
     getDayDiff(item) {
+      let start_date = item.start_date;
+      if (this.$moment(start_date).isBefore(this.dates[0].date)) {
+        start_date = this.dates[0].date;
+      }
       return (
         this.$moment(item.end_date, this.dateFormat).diff(
-          this.$moment(item.start_date, this.dateFormat),
+          this.$moment(start_date, this.dateFormat),
           "d"
         ) + 1
       );
@@ -105,10 +109,16 @@ export default {
     /*
         | Compare 2 given dates 
         */
-    compareDate(date, match_date) {
+    compareDate(date, start_date) {
+      if (
+        this.$moment(date).isAfter(start_date) &&
+        date == this.dates[0].date
+      ) {
+        return true;
+      }
       return (
         this.$moment(date).format("Y-M-D") ===
-        this.$moment(match_date).format("Y-M-D")
+        this.$moment(start_date).format("Y-M-D")
       );
     },
     /*
@@ -169,3 +179,17 @@ export default {
   }
 };
 </script>
+
+<style>
+.marker.closed {
+  background-color: #343a40 !important;
+}
+
+.marker.working {
+  background-color: #007bff !important;
+}
+
+.marker.registered {
+  background-color: #28a745 !important;
+}
+</style>

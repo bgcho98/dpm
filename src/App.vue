@@ -428,8 +428,16 @@ export default {
         .map(post => this.extractPost(post))
         .filter(post => this.fitlerSearchMember(post))
         .toArray()
-        .subscribe(contents => {
-          this.rows = [...this.rows, ...contents];
+        .subscribe({
+          next: contents => {
+            this.rows = [...this.rows, ...contents];
+          },
+          complete: () =>
+            this.rows.sort(
+              (left, right) =>
+                this.$moment(left.start_date).unix() -
+                this.$moment(right.start_date).unix()
+            )
         });
     },
     fitlerSearchMember(post) {
@@ -454,12 +462,19 @@ export default {
         .mergeMap(contents => contents)
         .map(post => this.extractPost(post))
         .toArray()
-        .subscribe(contents => {
-          this.rows = [...this.rows, ...contents];
+        .subscribe({
+          next: contents => {
+            this.rows = [...this.rows, ...contents];
+          },
+          complete: () =>
+            this.rows.sort(
+              (left, right) =>
+                this.$moment(left.start_date).unix() -
+                this.$moment(right.start_date).unix()
+            )
         });
     },
     getMemberName(post) {
-      console.log(post.users);
       let member;
       if (post.users.to.length != 0) {
         member = post.users.to[0].member;
@@ -650,7 +665,6 @@ export default {
         );
         post.dueDate = this.$moment(post.end_date).format();
       }
-      console.log(field);
     },
     getStartDate(end_date, diff) {
       return this.$bMoment(end_date, this.dateFormat)
@@ -673,6 +687,7 @@ export default {
       });
     },
     getSearchDueDate() {
+      this.searchDueDate.sort((left, right) => left - right);
       let start = this.$moment()
         .months(this.searchDueDate[0])
         .startOf("month")

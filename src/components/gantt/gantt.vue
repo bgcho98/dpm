@@ -361,6 +361,13 @@ $childItemFontSize: 12px;
 }
 </style>
 
+<style>
+.gantt-row:hover .table-cell,
+.gantt-row:hover .table-cell.weekend {
+  background: white !important;
+}
+</style>
+
 <template>
   <div>
     <!-- Gant Topbar -->
