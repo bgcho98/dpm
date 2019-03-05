@@ -708,6 +708,10 @@ export default {
 </script>
 
 <style>
+html {
+  overflow-y: scroll;
+}
+
 html * {
   font-size: 12px !important;
 }
