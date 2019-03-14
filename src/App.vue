@@ -287,6 +287,18 @@ export default {
         {
           text: "심동호",
           value: "1853861261679058197"
+        },
+        {
+          text: "조희성",
+          value: "2382803400204141835"
+        },
+        {
+          text: "권오진",
+          value: "2382803212700545768"
+        },
+        {
+          text: "김종완",
+          value: "2382803266005319748"
         }
       ]
     };
@@ -443,6 +455,10 @@ export default {
     fitlerSearchMember(post) {
       if (this.searchMembers.length == 0) {
         return true;
+      }
+
+      if (post.users.to.length == 0) {
+        return false;
       }
 
       return this.searchMembers.includes(
