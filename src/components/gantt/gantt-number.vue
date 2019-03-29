@@ -84,6 +84,11 @@ export default {
       localValue: this.value
     };
   },
+  watch: {
+    value() {
+      this.localValue = this.value;
+    }
+  },
   methods: {
     onUpdate() {
       this.$emit("input", parseInt(this.localValue));

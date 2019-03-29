@@ -3,17 +3,20 @@
     <BlockUI v-if="isLoading" :url="pathGifLoading"/>
     <div class="container-fluid" height="100%">
       <b-form>
-        <b-form-group>상위 업무 마일스톤으로 검색 :
+        <b-form-group>
+          상위 업무 마일스톤으로 검색 :
           <b-form-checkbox-group
             :size="'sm'"
             v-model="searchParentMileStone"
             :options="filteredParentMileStone"
           ></b-form-checkbox-group>
         </b-form-group>
-        <b-form-group>만기일 :
+        <b-form-group>
+          만기일 :
           <b-form-checkbox-group :size="'sm'" v-model="searchDueDate" :options="dueDateMonth"></b-form-checkbox-group>
         </b-form-group>
-        <b-form-group>담당자 :
+        <b-form-group>
+          담당자 :
           <b-form-checkbox-group :size="'sm'" v-model="searchMembers" :options="members"></b-form-checkbox-group>
         </b-form-group>
         <b-form-group>
@@ -50,6 +53,7 @@
         :date-limit="gantt.dateLimit"
         @update="updateWokringDate"
         :title="'스케쥴 조정'"
+        :startDate="minDate"
       ></gantt>
       <hr>
       <div v-for="man in manMonthSum" :key="man.name">
@@ -327,6 +331,9 @@ export default {
         .sort((a, b) => {
           return a.text.localeCompare(b.text);
         });
+    },
+    minDate() {
+      return "" + this.rows[0].start_date;
     }
   },
   methods: {
@@ -605,8 +612,9 @@ export default {
         post.md = Number(this.tagMap[newValue].text);
         if (isNaN(post.md)) {
           post.md = 0;
-          post.duration = post.md;
         }
+        post.duration = post.md;
+        this.setScheduleDate(post);
 
         this.calculate();
       });

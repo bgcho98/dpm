@@ -113,12 +113,19 @@ export default {
         | Compare 2 given dates 
         */
     compareDate(date, start_date, end_date, item) {
-      return this.$moment(this.ymdFormat(date)).isBetween(
-        this.ymdFormat(start_date),
-        this.ymdFormat(end_date),
-        null,
-        "[]"
-      );
+      if (
+        date == this.dates[0].date &&
+        this.$moment(date).isBetween(
+          this.ymdFormat(start_date),
+          this.ymdFormat(end_date),
+          null,
+          "[]"
+        )
+      ) {
+        return true;
+      }
+
+      return this.ymdFormat(date) === this.ymdFormat(start_date);
     },
     /*
         | Compare 2 given dates 

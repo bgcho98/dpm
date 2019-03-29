@@ -390,7 +390,7 @@ $childItemFontSize: 12px;
           </svg>
         </div>
         <flat-pickr ref="input" v-model="localStartDate"></flat-pickr>
-        <flat-pickr ref="input" v-model="localEndDate"></flat-pickr>
+        <flat-pickr ref="input" v-model="localEndDate" :config="config.flatPickr.endDate"></flat-pickr>
         <div class="next" @click="next">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -740,6 +740,13 @@ export default {
         show: false,
         type: "",
         text: ""
+      },
+      config: {
+        flatPickr: {
+          endDate: {
+            clickOpens: false
+          }
+        }
       },
       openItems: []
     };
@@ -1134,11 +1141,18 @@ export default {
         | Get the end_date based on the 
         | generated dates array.
         */
-    dates() {
-      this.localEndDate = this.dates[this.dates.length - 1].date;
+    dates: {
+      handler() {
+        this.localEndDate = this.dates[this.dates.length - 1].date;
+      },
+      deep: true,
+      immediate: true
     },
-    items() {
-      this.localItems = this.compileItems(this.items);
+    items: {
+      handler() {
+        this.localItems = this.compileItems(this.items);
+      },
+      deep: true
     }
   }
 };
