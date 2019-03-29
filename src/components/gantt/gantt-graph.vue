@@ -106,19 +106,18 @@ export default {
         ) + 1
       );
     },
+    ymdFormat(date) {
+      return this.$moment(date).format("Y-M-D");
+    },
     /*
         | Compare 2 given dates 
         */
-    compareDate(date, start_date) {
-      if (
-        this.$moment(date).isAfter(start_date) &&
-        date == this.dates[0].date
-      ) {
-        return true;
-      }
-      return (
-        this.$moment(date).format("Y-M-D") ===
-        this.$moment(start_date).format("Y-M-D")
+    compareDate(date, start_date, end_date, item) {
+      return this.$moment(this.ymdFormat(date)).isBetween(
+        this.ymdFormat(start_date),
+        this.ymdFormat(end_date),
+        null,
+        "[]"
       );
     },
     /*
