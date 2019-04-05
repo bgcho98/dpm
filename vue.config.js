@@ -1,9 +1,9 @@
 module.exports = {
   runtimeCompiler: true,
   devServer: {
+    port: 9999,
     useLocalIp: true,
     disableHostCheck: true,
-    port: 9999,
     proxy: {
       '^/api/dooray': {
         target: 'https://nhnent.dooray.com',
@@ -14,8 +14,7 @@ module.exports = {
         xfwd: false,
         onProxyReq(proxyReq, req, res) {
           proxyReq.setHeader('Host', 'nhnent.dooray.com')
-          proxyReq.setHeader('referer', 'https://nhnent.dooray.com/project/1963480696738741170/2361477291042219393?order=-createdAt&workflowClass=all&page=1')
-          proxyReq.setHeader('upgrade-insecure-requests', '1')
+          proxyReq.setHeader('referer', 'https://nhnent.dooray.com/project/1963480696738741170/2449958367881680487?order=-createdAt&workflowClass=all&page=1')
         }
       }
     }

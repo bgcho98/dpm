@@ -55,6 +55,9 @@ axios.defaults.headers.common["Cache-control"] =
   "no-store, no-cache, must-revalidate";
 axios.defaults.headers.common["Pragma"] = "no-cache";
 axios.defaults.headers.common["Expires"] = "0";
+axios.defaults.headers.common["dooray-api-version"] = "1.1";
+axios.defaults.headers.common["dooray-caller"] = "WEB";
+
 
 new Vue({
   router,
