@@ -329,7 +329,7 @@ export default {
         });
     },
     minDate() {
-      return "" + this.rows[0].start_date;
+      return "" + (this.rows[0].start_date ? this.rows[0].start_date : this.$bMoment().format(this.dateFormat));
     }
   },
   methods: {

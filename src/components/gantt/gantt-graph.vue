@@ -114,6 +114,8 @@ export default {
         */
     compareDate(date, start_date, end_date, item) {
       if (
+        start_date &&
+        end_date &&
         date == this.dates[0].date &&
         this.$moment(date).isBetween(
           this.ymdFormat(start_date),
