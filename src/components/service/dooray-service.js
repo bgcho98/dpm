@@ -31,7 +31,6 @@ export const DoorayService = {
         params: Object.assign(
           {
             order: "-createdAt",
-            hasParent: "true",
             page: page,
             size: 30
           },

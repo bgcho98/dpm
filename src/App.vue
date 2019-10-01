@@ -4,14 +4,6 @@
     <div class="container-fluid" height="100%">
       <b-form>
         <b-form-group>
-          상위 업무 마일스톤으로 검색 :
-          <b-form-checkbox-group
-            :size="'sm'"
-            v-model="searchParentMileStone"
-            :options="filteredParentMileStone"
-          ></b-form-checkbox-group>
-        </b-form-group>
-        <b-form-group>
           만기일 :
           <b-form-checkbox-group :size="'sm'" v-model="searchDueDate" :options="dueDateMonth"></b-form-checkbox-group>
         </b-form-group>
@@ -78,7 +70,7 @@
             <template v-if="props.column.field == 'subject'">
               <a :href="getPostLink(props.row.id)" target="_blank">{{ props.row.subject }}</a>
             </template>
-            <template v-else-if="props.column.field == 'parent.subject'">
+            <template v-else-if="props.column.field == 'parent.subject' && props.row.parent">
               <a
                 :href="getPostLink(props.row.parent.id)"
                 target="_blank"
